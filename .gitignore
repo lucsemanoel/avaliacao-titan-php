@@ -1,0 +1,11 @@
+# configurações locais
+.env
+
+# editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# logs
+*.log" > .gitignore
