@@ -106,4 +106,26 @@ class Service
 
         return $stmt->fetchAll();
     }
+
+    /**
+     * cadastra um novo servico prestado, sempre com status "pendente"
+     * (finished_at nulo) para o usuario informado.
+     *
+     * retorna o id do servico recem-criado.
+     */
+    public static function create(string $description, float $price, int $userId): int
+    {
+        $pdo = Database::getConnection();
+
+        $stmt = $pdo->prepare('INSERT INTO service (description, price, created_at, user_id_user)
+                                VALUES (:description, :price, NOW(), :user_id)');
+
+        $stmt->execute([
+            'description' => $description,
+            'price'       => $price,
+            'user_id'     => $userId,
+        ]);
+
+        return (int) $pdo->lastInsertId();
+    }
 }
