@@ -55,4 +55,61 @@ class AuthController
         header('Location: login.php');
         exit;
     }
+
+    /**
+     * mostra o formulario de cadastro de novo usuario (GET).
+     */
+    public function showRegisterForm(): void
+    {
+        // se já está logado, nao faz sentido cadastrar outro usuario aqui
+        if (isset($_SESSION['user_id'])) {
+            header('Location: dashboard.php');
+            exit;
+        }
+
+        require __DIR__ . '/../views/cadastro.php';
+    }
+
+    /**
+     * valida e processa o cadastro de um novo usuario (POST).
+     *
+     * validacoes: campos obrigatorios preenchidos, e-mail em formato
+     * valido, senha com tamanho minimo, e e-mail ainda nao cadastrado.
+     * em caso de erro, mostra a mesma tela de cadastro com a mensagem.
+     */
+    public function register(): void
+    {
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        if ($name === '' || $email === '' || $password === '') {
+            $error = 'Preencha todos os campos.';
+            require __DIR__ . '/../views/cadastro.php';
+            return;
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = 'Informe um e-mail válido.';
+            require __DIR__ . '/../views/cadastro.php';
+            return;
+        }
+
+        if (strlen($password) < 6) {
+            $error = 'A senha deve ter pelo menos 6 caracteres.';
+            require __DIR__ . '/../views/cadastro.php';
+            return;
+        }
+
+        if (User::emailExists($email)) {
+            $error = 'Já existe um usuário cadastrado com este e-mail.';
+            require __DIR__ . '/../views/cadastro.php';
+            return;
+        }
+
+        User::create($name, $email, $password);
+
+        header('Location: login.php?sucesso=cadastro');
+        exit;
+    }
 }

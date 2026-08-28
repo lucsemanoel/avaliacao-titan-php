@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Login - Ordem de Serviços</title>
+    <title>Cadastrar Usuário - Ordem de Serviços</title>
     <style>
         * {
             box-sizing: border-box;
@@ -19,20 +19,20 @@
             margin: 0;
         }
 
-        .login-box {
+        .register-box {
             width: 100%;
             max-width: 550px;
             padding: 0 24px;
         }
 
-        .login-box h1 {
+        .register-box h1 {
             font-size: 32px;
             font-weight: bold;
             color: #1a1a1a;
             margin: 0 0 32px;
         }
 
-        .login-box input {
+        .register-box input {
             width: 100%;
             padding: 14px 16px;
             margin-bottom: 20px;
@@ -42,11 +42,11 @@
             color: #1a1a1a;
         }
 
-        .login-box input::placeholder {
+        .register-box input::placeholder {
             color: #aaa;
         }
 
-        .login-box input:focus {
+        .register-box input:focus {
             outline: none;
             border-color: #2563eb;
         }
@@ -87,37 +87,29 @@
             margin-bottom: 20px;
             text-align: center;
         }
-
-        .success {
-            background: #dcfce7;
-            color: #166534;
-            padding: 10px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
     </style>
 </head>
 
 <body>
-    <div class="login-box">
-        <h1>Sistema de Controle de Serviços</h1>
+    <div class="register-box">
+        <h1>Cadastrar Novo Usuário</h1>
 
         <?php if (!empty($error)): ?>
             <div class="error"><?= htmlspecialchars($error) ?></div>
-        <?php elseif (($_GET['sucesso'] ?? '') === 'cadastro'): ?>
-            <div class="success">Usuário cadastrado com sucesso! Faça login para continuar.</div>
         <?php endif; ?>
 
-        <form method="POST" action="login.php">
-            <input type="email" id="email" name="email" placeholder="email@email.com" required>
+        <form method="POST" action="cadastro.php">
+            <input type="text" id="name" name="name" placeholder="Nome completo"
+                value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required>
+
+            <input type="email" id="email" name="email" placeholder="email@email.com"
+                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
 
             <input type="password" id="password" name="password" placeholder="**************" required>
 
             <div class="actions">
-                <button type="submit">Entrar</button>
-                <a href="cadastro.php">Cadastrar usuário</a>
+                <button type="submit">Cadastrar</button>
+                <a href="login.php">Já tenho uma conta</a>
             </div>
         </form>
     </div>
