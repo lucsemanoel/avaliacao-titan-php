@@ -178,4 +178,57 @@ class Service
 
         return $stmt->execute(['id' => $id]);
     }
+
+    /**
+     * finaliza um servico: grava a data de finalizacao (finished_at = NOW())
+     * e calcula/grava a comissao do usuario com base no valor do servico.
+     *
+     * retorna os dados atualizados do servico (util pro controller montar o
+     * e-mail), ou null se o servico nao existir ou ja estiver finalizado.
+     */
+    public static function finalize(int $id): ?array
+    {
+        $service = self::findById($id);
+
+        if (!$service || !empty($service['finished_at'])) {
+            return null;
+        }
+
+        $commission = self::calculateCommission((float) $service['price']);
+
+        $pdo = Database::getConnection();
+
+        $stmt = $pdo->prepare('UPDATE service
+                                SET finished_at = NOW(), commission_user = :commission
+                                WHERE id_service = :id');
+
+        $stmt->execute([
+            'commission' => $commission,
+            'id'         => $id,
+        ]);
+
+        return self::findById($id);
+    }
+
+    /**
+     * calcula o valor da comissao conforme a regra do README:
+     *  - ate R$ 1.000,00: 5%
+     *  - acima de R$ 1.000,00: 10%
+     *  - acima de R$ 10.000,00: 20%
+     *
+     * a ordem das comparacoes importa: checamos a faixa maior primeiro
+     * pra nao cair na condicao de "acima de 1.000" por engano.
+     */
+    private static function calculateCommission(float $price): float
+    {
+        if ($price > 10000) {
+            return $price * 0.20;
+        }
+
+        if ($price > 1000) {
+            return $price * 0.10;
+        }
+
+        return $price * 0.05;
+    }
 }
