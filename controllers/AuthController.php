@@ -79,11 +79,10 @@ class AuthController
      */
     public function register(): void
     {
-        $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        if ($name === '' || $email === '' || $password === '') {
+        if ($email === '' || $password === '') {
             $error = 'Preencha todos os campos.';
             require __DIR__ . '/../views/cadastro.php';
             return;
@@ -106,6 +105,12 @@ class AuthController
             require __DIR__ . '/../views/cadastro.php';
             return;
         }
+
+        // como o wireframe só pede email e senha, o nome exibido no
+        // dashboard ("Logado como: ...") é gerado a partir do email.
+        // ex: jose.silva@email.com -> Jose Silva
+        $localPart = strstr($email, '@', true) ?: $email;
+        $name = ucwords(str_replace(['.', '_', '-'], ' ', $localPart));
 
         User::create($name, $email, $password);
 

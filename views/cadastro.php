@@ -99,9 +99,6 @@
         <?php endif; ?>
 
         <form method="POST" action="cadastro.php">
-            <input type="text" id="name" name="name" placeholder="Nome completo"
-                value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required>
-
             <input type="email" id="email" name="email" placeholder="email@email.com"
                 value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
 
