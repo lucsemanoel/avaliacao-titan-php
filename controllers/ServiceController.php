@@ -223,4 +223,26 @@ class ServiceController
             file_put_contents($logDir . '/emails.log', $log, FILE_APPEND);
         }
     }
+
+    /**
+     * retorna os servicos filtrados em JSON, usado pelo fetch() do dashboard
+     * (dashboard.js) para atualizar a tabela sem recarregar a pagina.
+     */
+    public function filterJson(): void
+    {
+        $this->requireLogin();
+
+        $filters = [
+            'date_start'  => $_GET['date_start'] ?? '',
+            'date_end'    => $_GET['date_end'] ?? '',
+            'description' => $_GET['description'] ?? '',
+            'status'      => $_GET['status'] ?? '',
+            'user_name'   => $_GET['user_name'] ?? '',
+        ];
+
+        $services = Service::findAll($filters);
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($services);
+    }
 }

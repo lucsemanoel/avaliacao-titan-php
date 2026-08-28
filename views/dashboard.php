@@ -80,25 +80,33 @@ function formatDate(?string $datetime): string
         }
 
         h1 {
-            font-size: 28px;
-            margin: 0 0 24px;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0 0 8px;
+        }
+
+        .total-badge {
+            display: inline-block;
+            margin-bottom: 28px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .total-badge strong {
+            color: #15803d;
+            font-size: 16px;
         }
 
         .summary-row {
             display: flex;
-            gap: 40px;
+            gap: 64px;
             margin-bottom: 32px;
         }
 
         .summary-box h2 {
             font-size: 20px;
-            margin: 0 0 12px;
-        }
-
-        .summary-box.total .value {
-            font-size: 26px;
             font-weight: bold;
-            color: #15803d;
+            margin: 0 0 12px;
         }
 
         .summary-box ul {
@@ -121,14 +129,14 @@ function formatDate(?string $datetime): string
 
         form.filters input,
         form.filters select {
-            padding: 10px 12px;
-            border: 1px solid #999;
+            padding: 10px 14px;
+            border: 1px solid #1a1a1a;
             border-radius: 2px;
             font-size: 14px;
         }
 
         form.filters button {
-            padding: 10px 20px;
+            padding: 10px 24px;
             background: #4a4a4a;
             color: #fff;
             border: none;
@@ -141,6 +149,11 @@ function formatDate(?string $datetime): string
             background: #333;
         }
 
+        .table-box {
+            border: 1px solid #1a1a1a;
+            padding: 4px 16px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -149,14 +162,15 @@ function formatDate(?string $datetime): string
         table th,
         table td {
             text-align: left;
-            padding: 10px 12px;
+            padding: 12px;
             border-bottom: 1px solid #ddd;
         }
 
         table th {
             font-size: 13px;
+            font-weight: bold;
             text-transform: uppercase;
-            color: #555;
+            color: #1a1a1a;
         }
 
         .status {
@@ -211,7 +225,8 @@ function formatDate(?string $datetime): string
     </aside>
 
     <main class="content">
-        <h1>DASHBOARD <small style="font-size: 14px; color: #777;"><?= htmlspecialchars($today) ?></small></h1>
+        <h1>DASHBOARD</h1>
+        <p class="total-badge"><?= htmlspecialchars($today) ?> &nbsp;|&nbsp; Valor Total dos Serviços: <strong><?= formatMoney($totalValue) ?></strong></p>
         <?php
         $mensagensSucesso = [
             'cadastro'    => 'Serviço cadastrado com sucesso!',
@@ -236,9 +251,17 @@ function formatDate(?string $datetime): string
             </p>
         <?php endif; ?>
         <div class="summary-row">
-            <div class="summary-box total">
-                <h2>Valor Total dos Serviços</h2>
-                <div class="value"><?= formatMoney($totalValue) ?></div>
+            <div class="summary-box">
+                <h2>Últimos Serviços</h2>
+                <?php if (empty($recentServices)): ?>
+                    <p class="empty">Nenhum serviço cadastrado.</p>
+                <?php else: ?>
+                    <ul>
+                        <?php foreach ($recentServices as $recent): ?>
+                            <li><?= (int) $recent['id_service'] ?> - <?= htmlspecialchars($recent['description']) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
             </div>
 
             <div class="summary-box">
@@ -255,7 +278,7 @@ function formatDate(?string $datetime): string
             </div>
         </div>
 
-        <form class="filters" method="GET" action="dashboard.php">
+        <form class="filters" id="filtros-form" method="GET" action="dashboard.php">
             <input type="text" name="description" placeholder="Nome do serviço" value="<?= htmlspecialchars($filters['description'] ?? '') ?>">
             <input type="text" name="user_name" placeholder="Nome do usuário" value="<?= htmlspecialchars($filters['user_name'] ?? '') ?>">
             <select name="status">
@@ -279,7 +302,7 @@ function formatDate(?string $datetime): string
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="tabela-servicos">
                 <?php if (empty($services)): ?>
                     <tr>
                         <td colspan="6" class="empty">Nenhum serviço encontrado.</td>
@@ -321,6 +344,8 @@ function formatDate(?string $datetime): string
             </tbody>
         </table>
     </main>
+
+    <script src="assets/js/dashboard.js"></script>
 </body>
 
 </html>
