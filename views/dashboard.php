@@ -212,9 +212,17 @@ function formatDate(?string $datetime): string
 
     <main class="content">
         <h1>DASHBOARD <small style="font-size: 14px; color: #777;"><?= htmlspecialchars($today) ?></small></h1>
-        <?php if (($_GET['sucesso'] ?? '') === 'cadastro'): ?>
+        <?php
+        $mensagensSucesso = [
+            'cadastro'  => 'Serviço cadastrado com sucesso!',
+            'edicao'    => 'Serviço atualizado com sucesso!',
+            'exclusao'  => 'Serviço excluído com sucesso!',
+        ];
+        $sucesso = $_GET['sucesso'] ?? '';
+        ?>
+        <?php if (isset($mensagensSucesso[$sucesso])): ?>
             <p style="background:#dcfce7; color:#166534; padding:10px 14px; border-radius:4px; margin-bottom:20px;">
-                Serviço cadastrado com sucesso!
+                <?= $mensagensSucesso[$sucesso] ?>
             </p>
         <?php elseif (($_GET['erro'] ?? '') === 'cadastro'): ?>
             <p style="background:#fee2e2; color:#991b1b; padding:10px 14px; border-radius:4px; margin-bottom:20px;">
@@ -284,8 +292,11 @@ function formatDate(?string $datetime): string
                             </td>
                             <td><?= htmlspecialchars($service['user_name']) ?></td>
                             <td class="actions">
-                                <button type="button">Alterar</button>
-                                <button type="button" class="delete">Excluir</button>
+                                <a href="servico_editar.php?id=<?= (int) $service['id_service'] ?>">Alterar</a>
+                                <form method="POST" action="servico_excluir.php" onsubmit="return confirm('Excluir este serviço?');">
+                                    <input type="hidden" name="id" value="<?= (int) $service['id_service'] ?>">
+                                    <button type="submit" class="delete">Excluir</button>
+                                </form>
                                 <?php if (!$isFinished): ?>
                                     <button type="button">Finalizar</button>
                                 <?php endif; ?>
