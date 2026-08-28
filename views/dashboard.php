@@ -214,19 +214,25 @@ function formatDate(?string $datetime): string
         <h1>DASHBOARD <small style="font-size: 14px; color: #777;"><?= htmlspecialchars($today) ?></small></h1>
         <?php
         $mensagensSucesso = [
-            'cadastro'  => 'Serviço cadastrado com sucesso!',
-            'edicao'    => 'Serviço atualizado com sucesso!',
-            'exclusao'  => 'Serviço excluído com sucesso!',
+            'cadastro'    => 'Serviço cadastrado com sucesso!',
+            'edicao'      => 'Serviço atualizado com sucesso!',
+            'exclusao'    => 'Serviço excluído com sucesso!',
+            'finalizacao' => 'Serviço finalizado com sucesso! Um e-mail foi enviado ao usuário.',
+        ];
+        $mensagensErro = [
+            'cadastro'    => 'Não foi possível cadastrar o serviço. Verifique os dados informados.',
+            'finalizacao' => 'Não foi possível finalizar este serviço (ele pode já estar finalizado).',
         ];
         $sucesso = $_GET['sucesso'] ?? '';
+        $erro = $_GET['erro'] ?? '';
         ?>
         <?php if (isset($mensagensSucesso[$sucesso])): ?>
             <p style="background:#dcfce7; color:#166534; padding:10px 14px; border-radius:4px; margin-bottom:20px;">
                 <?= $mensagensSucesso[$sucesso] ?>
             </p>
-        <?php elseif (($_GET['erro'] ?? '') === 'cadastro'): ?>
+        <?php elseif (isset($mensagensErro[$erro])): ?>
             <p style="background:#fee2e2; color:#991b1b; padding:10px 14px; border-radius:4px; margin-bottom:20px;">
-                Não foi possível cadastrar o serviço. Verifique os dados informados.
+                <?= $mensagensErro[$erro] ?>
             </p>
         <?php endif; ?>
         <div class="summary-row">
@@ -289,6 +295,11 @@ function formatDate(?string $datetime): string
                                 <span class="status <?= $isFinished ? 'finalizado' : 'pendente' ?>">
                                     <?= $isFinished ? 'Finalizado' : 'Pendente' ?>
                                 </span>
+                                <?php if ($isFinished): ?>
+                                    <div style="font-size:12px; color:#666; margin-top:4px;">
+                                        Comissão: <?= formatMoney((float) $service['commission_user']) ?>
+                                    </div>
+                                <?php endif; ?>
                             </td>
                             <td><?= htmlspecialchars($service['user_name']) ?></td>
                             <td class="actions">
@@ -298,7 +309,10 @@ function formatDate(?string $datetime): string
                                     <button type="submit" class="delete">Excluir</button>
                                 </form>
                                 <?php if (!$isFinished): ?>
-                                    <button type="button">Finalizar</button>
+                                    <form method="POST" action="servico_finalizar.php" onsubmit="return confirm('Finalizar este serviço? Essa ação não pode ser desfeita.');">
+                                        <input type="hidden" name="id" value="<?= (int) $service['id_service'] ?>">
+                                        <button type="submit">Finalizar</button>
+                                    </form>
                                 <?php endif; ?>
                             </td>
                         </tr>
