@@ -128,4 +128,54 @@ class Service
 
         return (int) $pdo->lastInsertId();
     }
+    /**
+     * busca um unico servico pelo id, com o nome do usuario via JOIN.
+     * usada para preencher o formulario de edicao.
+     */
+    public static function findById(int $id): ?array
+    {
+        $pdo = Database::getConnection();
+
+        $stmt = $pdo->prepare('SELECT s.id_service, s.description, s.price, s.created_at,
+                                       s.finished_at, s.commission_user, s.user_id_user,
+                                       u.name AS user_name
+                                FROM service s
+                                INNER JOIN user u ON u.id_user = s.user_id_user
+                                WHERE s.id_service = :id');
+        $stmt->execute(['id' => $id]);
+
+        $service = $stmt->fetch();
+
+        return $service ?: null;
+    }
+
+    /**
+     * atualiza descricao e preco de um servico existente.
+     */
+    public static function update(int $id, string $description, float $price): bool
+    {
+        $pdo = Database::getConnection();
+
+        $stmt = $pdo->prepare('UPDATE service
+                                SET description = :description, price = :price
+                                WHERE id_service = :id');
+
+        return $stmt->execute([
+            'description' => $description,
+            'price'       => $price,
+            'id'          => $id,
+        ]);
+    }
+
+    /**
+     * exclui um servico pelo id.
+     */
+    public static function delete(int $id): bool
+    {
+        $pdo = Database::getConnection();
+
+        $stmt = $pdo->prepare('DELETE FROM service WHERE id_service = :id');
+
+        return $stmt->execute(['id' => $id]);
+    }
 }
