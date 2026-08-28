@@ -212,7 +212,15 @@ function formatDate(?string $datetime): string
 
     <main class="content">
         <h1>DASHBOARD <small style="font-size: 14px; color: #777;"><?= htmlspecialchars($today) ?></small></h1>
-
+        <?php if (($_GET['sucesso'] ?? '') === 'cadastro'): ?>
+            <p style="background:#dcfce7; color:#166534; padding:10px 14px; border-radius:4px; margin-bottom:20px;">
+                Serviço cadastrado com sucesso!
+            </p>
+        <?php elseif (($_GET['erro'] ?? '') === 'cadastro'): ?>
+            <p style="background:#fee2e2; color:#991b1b; padding:10px 14px; border-radius:4px; margin-bottom:20px;">
+                Não foi possível cadastrar o serviço. Verifique os dados informados.
+            </p>
+        <?php endif; ?>
         <div class="summary-row">
             <div class="summary-box total">
                 <h2>Valor Total dos Serviços</h2>
