@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Service.php';
+require_once __DIR__ . '/../models/User.php';
 
 /**
  * controller responsavel pelo cadastro, edicao e exclusao de servicos.
@@ -143,5 +144,83 @@ class ServiceController
 
         header('Location: dashboard.php?sucesso=exclusao');
         exit;
+    }
+
+    /**
+     * finaliza o servico informado via POST: grava a data de finalizacao,
+     * calcula a comissao (feito dentro do model) e envia um e-mail pro
+     * usuario responsavel pelo servico. so aceita POST.
+     */
+    public function finalize(): void
+    {
+        $this->requireLogin();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: dashboard.php');
+            exit;
+        }
+
+        $id = (int) ($_POST['id'] ?? 0);
+
+        if ($id <= 0) {
+            header('Location: dashboard.php');
+            exit;
+        }
+
+        $service = Service::finalize($id);
+
+        // Service::finalize() retorna null se o id nao existir ou se o
+        // servico ja estava finalizado (ver comentario no model)
+        if (!$service) {
+            header('Location: dashboard.php?erro=finalizacao');
+            exit;
+        }
+
+        $user = User::findById((int) $service['user_id_user']);
+
+        if ($user) {
+            $this->sendFinalizationEmail($user, $service);
+        }
+
+        header('Location: dashboard.php?sucesso=finalizacao');
+        exit;
+    }
+
+    /**
+     * envia (ou registra, se o servidor de e-mail local nao estiver
+     * configurado) o e-mail avisando que o servico foi finalizado e
+     * informando o valor da comissao calculada.
+     *
+     * em ambiente XAMPP local, mail() geralmente falha por falta de
+     * SMTP configurado - por isso, se mail() retornar false, gravamos
+     * o conteudo do e-mail em storage/emails.log como fallback, so pra
+     * ser possivel validar o fluxo sem precisar configurar um SMTP real.
+     */
+    private function sendFinalizationEmail(array $user, array $service): void
+    {
+        $subject = 'Serviço finalizado - #' . $service['id_service'];
+
+        $body = "Olá, {$user['name']}!\n\n"
+            . "O serviço \"{$service['description']}\" foi finalizado.\n"
+            . 'Valor do serviço: R$ ' . number_format((float) $service['price'], 2, ',', '.') . "\n"
+            . 'Comissão: R$ ' . number_format((float) $service['commission_user'], 2, ',', '.') . "\n";
+
+        $headers = 'From: nao-responda@jminformatica.com';
+
+        $sent = @mail($user['email'], $subject, $body, $headers);
+
+        if (!$sent) {
+            $logDir = __DIR__ . '/../storage';
+
+            if (!is_dir($logDir)) {
+                mkdir($logDir, 0777, true);
+            }
+
+            $log = '[' . date('Y-m-d H:i:s') . "] Para: {$user['email']}\n"
+                . "Assunto: {$subject}\n{$body}\n"
+                . str_repeat('-', 40) . "\n";
+
+            file_put_contents($logDir . '/emails.log', $log, FILE_APPEND);
+        }
     }
 }
